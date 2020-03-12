@@ -4,12 +4,27 @@ import com.bigsea.entity.Employee;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
 import org.apache.poi.xssf.usermodel.XSSFComment;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 自定义sheet基于Sax的解析处理器
  */
 public class SheetHandler implements XSSFSheetXMLHandler.SheetContentsHandler {
     // 封装实体对象
     private Employee employee;
+
+    // 实体对象集合
+    private List<Employee> employeeList = new ArrayList<>(MAX_EMPLOYEE);
+
+    // 集合最大容量
+    private static final int MAX_EMPLOYEE = 1024;
+
+    // 第几次插入数据，初始值为1
+    private int times = 1;
+
+    // 总数据量
+    private int allCount = 0;
 
     /**
      * 当开始解析某一行的时候出发
@@ -28,7 +43,15 @@ public class SheetHandler implements XSSFSheetXMLHandler.SheetContentsHandler {
      */
     @Override
     public void endRow(int i) {
-        System.out.println(employee);
+        // System.out.println(employee);
+        employeeList.add(employee);
+        allCount ++;
+        if(employeeList.size() == MAX_EMPLOYEE) {
+            // 假设有一个批量插入
+            System.out.println("执行第" + times + "次插入");
+            times ++;
+            employeeList.clear();
+        }
     }
 
     /**
@@ -71,5 +94,13 @@ public class SheetHandler implements XSSFSheetXMLHandler.SheetContentsHandler {
                     break;
             }
         }
+    }
+
+    public List<Employee> getEmployeeList() {
+        return employeeList;
+    }
+
+    public int getAllCount() {
+        return allCount;
     }
 }

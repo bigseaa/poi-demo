@@ -1,5 +1,6 @@
 package com.bigsea.service.impl;
 
+import com.bigsea.entity.Employee;
 import com.bigsea.service.ImportExcelService;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackageAccess;
@@ -13,6 +14,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * 导入excel文件业务层
@@ -24,7 +26,7 @@ import java.io.InputStream;
 public class ImportServiceImpl implements ImportExcelService {
     /**
      * 读取大数据量excel
-     * @parm path 文件路径
+     * @param path 文件路径
      */
     @Override
     public void readBigDataExcel(String path) throws Exception {
@@ -39,7 +41,8 @@ public class ImportServiceImpl implements ImportExcelService {
         // 5.创建sax xmlReader对象
         XMLReader xmlReader = XMLReaderFactory.createXMLReader();
         // 6.注册事件驱动处理器
-        XSSFSheetXMLHandler xssfSheetXMLHandler = new XSSFSheetXMLHandler(stylesTable, sharedStringsTable, new SheetHandler(), false);
+        SheetHandler sheetHandler = new SheetHandler();
+        XSSFSheetXMLHandler xssfSheetXMLHandler = new XSSFSheetXMLHandler(stylesTable, sharedStringsTable, sheetHandler, false);
         xmlReader.setContentHandler(xssfSheetXMLHandler);
         // 7.逐行读取
         XSSFReader.SheetIterator sheetIterator = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
@@ -48,5 +51,8 @@ public class ImportServiceImpl implements ImportExcelService {
             InputSource is = new InputSource(in);
             xmlReader.parse(is);
         }
+        List<Employee> employeeList = sheetHandler.getEmployeeList();   // 剩余未插入的数据插入
+        System.out.println("最后一次插入数据，本次数据量为" + employeeList.size());
+        System.out.println("共插入" + sheetHandler.getAllCount() + "条数据");
     }
 }
